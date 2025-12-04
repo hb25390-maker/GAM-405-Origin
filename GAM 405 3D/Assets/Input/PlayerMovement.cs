@@ -16,6 +16,8 @@ public class Playermovement : MonoBehaviour
 
     public float moveSpeed = 5f;
 
+    public bool isGrounded = false;
+
     [SerializeField] private Vector2 moveInput;
     [SerializeField] private Vector2 lookInput;
     [SerializeField] float floorCheckDistance;
@@ -32,7 +34,7 @@ public class Playermovement : MonoBehaviour
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
-    {
+    {bool jumpInput = Input.GetKeyDown(KeyCode.Space);
         i = this;
 
         rb = GetComponent<Rigidbody>();
@@ -55,10 +57,10 @@ public class Playermovement : MonoBehaviour
         
         moveInput = moveAction != null ? moveAction.action.ReadValue<Vector2>() : Vector2.zero;
        // lookInput = lookAction != null ? lookAction.action.ReadValue<Vector2>() : Vector2.zero;
-        bool jumpInput = Input.GetKeyDown(KeyCode.Space);
+        
         //bool jumpInput = jumpAction.action.started;
 
-        if (cameraTransform) HandleLook();
+       // if (cameraTransform) HandleLook();
 
        
     }
@@ -71,13 +73,13 @@ public class Playermovement : MonoBehaviour
     void OnEnable()
     {
         moveAction?.action.Enable();
-       // lookAction?.action.Enable();
+       lookAction?.action.Enable();
 
     }
     void OnDisable()
     {
         moveAction?.action.Disable();
-       // lookAction?.action.Disable();
+        lookAction?.action.Disable();
 
     }
 
@@ -99,19 +101,15 @@ public class Playermovement : MonoBehaviour
         Vector3 horizontalVelocity = transform.TransformDirection(inputDir) * moveSpeed;
         Vector3 verticalVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
 
-        if (IsGrounded())
+        if (isGrounded == true)
         {
-            if(verticalVelocity.y < 0)
-            {
-                verticalVelocity = Vector3.zero;
-            }
 
-            if(jumpInput)
+            if (jumpInput)
             {
                 verticalVelocity = Vector3.up * jumpSpeed;
             }
         }
-        else
+        else if(isGrounded == false) 
         {
             verticalVelocity -= Vector3.up * gravity * Time.deltaTime;
         }
@@ -120,7 +118,7 @@ public class Playermovement : MonoBehaviour
         rb.linearVelocity = horizontalVelocity + verticalVelocity;
     }
 
-    void HandleLook()
+  /*  public void HandleLook()
     {
         float yaw = lookInput.x * mouseSensitivity;
         transform.Rotate(Vector3.up * yaw, Space.World);
@@ -129,19 +127,20 @@ public class Playermovement : MonoBehaviour
         pitch = Mathf.Clamp(pitch, -80f, 80f);
         cameraTransform.localEulerAngles = new Vector3(pitch, 0f, 0f);
 
-    }
-    private bool IsGrounded()
+    }*/
+    public void GroundCheck()
     {
         RaycastHit hitInfo;
         Physics.Raycast(this.transform.position, -transform.up, out hitInfo, floorCheckDistance);
 
         if(hitInfo.collider != null)
         {
-            return true;
+            isGrounded = true;
+            
         }
         else
         {
-            return false;
+            isGrounded = false;
         }
     }
     //private void OnEnable() => EventManager.TogglePause += TogglePause;
